@@ -40,41 +40,99 @@ class userAuthController extends Controller {
     // send OTP
     this.sendOTP(phoneNumber, res);
   }
+  // async checkOtp(req, res) {
+  //   await checkOtpSchema.validateAsync(req.body);
+  //   const { otp: code, phoneNumber } = req.body;
+
+  //   const user = await UserModel.findOne(
+  //     { phoneNumber },
+  //     { password: 0, refreshToken: 0, accessToken: 0 }
+  //   );
+
+  //   if (!user) throw createError.NotFound("کاربری با این مشخصات یافت نشد");
+
+  //   if (user.otp.code != code)
+  //     throw createError.BadRequest("کد ارسال شده صحیح نمیباشد");
+
+  //   if (new Date(`${user.otp.expiresIn}`).getTime() < Date.now())
+  //     throw createError.BadRequest("کد اعتبار سنجی منقضی شده است");
+
+  //   user.isVerifiedPhoneNumber = true;
+  //   await user.save();
+
+  //   // await setAuthCookie(res, user); // set httpOnly cookie
+  //   await setAccessToken(res, user);
+  //   await setRefreshToken(res, user);
+  //   let WELLCOME_MESSAGE = `کد تایید شد، به فرانت هوکس خوش آمدید`;
+  //   if (!user.isActive)
+  //     WELLCOME_MESSAGE = `کد تایید شد، لطفا اطلاعات خود را تکمیل کنید`;
+
+  //   return res.status(HttpStatus.OK).json({
+  //     statusCode: HttpStatus.OK,
+  //     data: {
+  //       message: WELLCOME_MESSAGE,
+  //       user,
+  //     },
+  //   });
+  // }
   async checkOtp(req, res) {
     await checkOtpSchema.validateAsync(req.body);
     const { otp: code, phoneNumber } = req.body;
-
     const user = await UserModel.findOne(
       { phoneNumber },
       { password: 0, refreshToken: 0, accessToken: 0 }
     );
-
     if (!user) throw createError.NotFound("کاربری با این مشخصات یافت نشد");
-
-    if (user.otp.code != code)
-      throw createError.BadRequest("کد ارسال شده صحیح نمیباشد");
-
-    if (new Date(`${user.otp.expiresIn}`).getTime() < Date.now())
-      throw createError.BadRequest("کد اعتبار سنجی منقضی شده است");
-
+    if (new Date(user.otp.expiresIn).getTime() < Date.now())
+    throw createError.BadRequest("کد اعتبار سنجی منقضی شده است");
     user.isVerifiedPhoneNumber = true;
     await user.save();
+   
+    
+    try {
+        const response = await axios.post(
+            "https://api.limosms.com/api/checkcode",
+            {
+                Mobile: phoneNumber,
+                Code: code,
+            },
+            {
+                headers: {
+                  ApiKey: process.env.LIMO_API_KEY,  // توجه: این را باید با کد دسترسی واقعی خود جایگزین کنید
+                },
+            }
+        );
+            if(response.data.success === true){
+              await setAccessToken(res, user);
+              await setRefreshToken(res, user);
+            }
+        console.log(response.data.success);
+        console.log(response.status);
+        return res.status(HttpStatus.OK).send({
+            statusCode: HttpStatus.OK,
+            data: {
+                message: response.data,
+                
+            },
+        });
+    } catch (error) {
+        console.error(error);
+        throw createError.InternalServerError("خطا در برقراری ارتباط با سرویس پیامکی");
+    }
 
-    // await setAuthCookie(res, user); // set httpOnly cookie
-    await setAccessToken(res, user);
-    await setRefreshToken(res, user);
-    let WELLCOME_MESSAGE = `کد تایید شد، به فرانت هوکس خوش آمدید`;
+    let welcomeMessage = `کد تایید شد، به فرانت هوکس خوش آمدید`;
     if (!user.isActive)
-      WELLCOME_MESSAGE = `کد تایید شد، لطفا اطلاعات خود را تکمیل کنید`;
+    welcomeMessage = `کد تایید شد، لطفاً اطلاعات خود را تکمیل کنید`;
 
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      data: {
-        message: WELLCOME_MESSAGE,
-        user,
-      },
-    });
-  }
+  return res.status(HttpStatus.OK).json({
+    statusCode: HttpStatus.OK,
+    data: {
+      message: welcomeMessage,
+      user,
+    },
+  });
+}
+
   async saveUser(phoneNumber) {
     const otp = {
       code: this.code,
@@ -111,7 +169,7 @@ class userAuthController extends Controller {
         "https://api.limosms.com/api/sendcode",
         {
           Mobile: phoneNumber, 
-          Footer: "کد دسترسی ",
+          Footer: "کد دسترسی",
           template: "registerVerify",
         },
         {
