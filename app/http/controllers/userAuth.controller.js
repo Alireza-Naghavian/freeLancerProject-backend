@@ -10,7 +10,7 @@ const {
 const createError = require("http-errors");
 const { UserModel } = require("../../models/user");
 const Kavenegar = require("kavenegar");
-const CODE_EXPIRES = 90 * 1000; //90 seconds in miliseconds
+const CODE_EXPIRES = 120 * 1000; //90 seconds in miliseconds
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const {
   completeProfileSchema,
@@ -84,54 +84,55 @@ class userAuthController extends Controller {
     );
     if (!user) throw createError.NotFound("کاربری با این مشخصات یافت نشد");
     if (new Date(user.otp.expiresIn).getTime() < Date.now())
-    throw createError.BadRequest("کد اعتبار سنجی منقضی شده است");
+      throw createError.BadRequest("کد اعتبار سنجی منقضی شده است");
     user.isVerifiedPhoneNumber = true;
     await user.save();
-   
-    
+
     try {
-        const response = await axios.post(
-            "https://api.limosms.com/api/checkcode",
-            {
-                Mobile: phoneNumber,
-                Code: code,
-            },
-            {
-                headers: {
-                  ApiKey: process.env.LIMO_API_KEY,  // توجه: این را باید با کد دسترسی واقعی خود جایگزین کنید
-                },
-            }
-        );
-            if(response.data.success === true){
-              await setAccessToken(res, user);
-              await setRefreshToken(res, user);
-            }
-        console.log(response.data.success);
-        console.log(response.status);
-        return res.status(HttpStatus.OK).send({
-            statusCode: HttpStatus.OK,
-            data: {
-                message: response.data,
-                
-            },
-        });
+      const response = await axios.post(
+        "https://api.limosms.com/api/checkcode",
+        {
+          Mobile: phoneNumber,
+          Code: code,
+        },
+        {
+          headers: {
+            ApiKey: process.env.LIMO_API_KEY, // توجه: این را باید با کد دسترسی واقعی خود جایگزین کنید
+          },
+        }
+      );
+      if (response.data.success === true) {
+        await setAccessToken(res, user);
+        await setRefreshToken(res, user);
+      }
+      console.log(response.data.success);
+      console.log(response.status);
+      return res.status(HttpStatus.OK).send({
+        statusCode: HttpStatus.OK,
+        data: {
+          message: response.data,
+          user
+        },
+      });
     } catch (error) {
-        console.error(error);
-        throw createError.InternalServerError("خطا در برقراری ارتباط با سرویس پیامکی");
+      console.error(error);
+      throw createError.InternalServerError(
+        "خطا در برقراری ارتباط با سرویس پیامکی"
+      );
     }
 
     let welcomeMessage = `کد تایید شد، به فرانت هوکس خوش آمدید`;
     if (!user.isActive)
-    welcomeMessage = `کد تایید شد، لطفاً اطلاعات خود را تکمیل کنید`;
+      welcomeMessage = `کد تایید شد، لطفاً اطلاعات خود را تکمیل کنید`;
 
-  return res.status(HttpStatus.OK).json({
-    statusCode: HttpStatus.OK,
-    data: {
-      message: welcomeMessage,
-      user,
-    },
-  });
-}
+    return res.status(HttpStatus.OK).json({
+      statusCode: HttpStatus.OK,
+      data: {
+        message: welcomeMessage,
+        user,
+      },
+    });
+  }
 
   async saveUser(phoneNumber) {
     const otp = {
@@ -168,13 +169,13 @@ class userAuthController extends Controller {
       .post(
         "https://api.limosms.com/api/sendcode",
         {
-          Mobile: phoneNumber, 
+          Mobile: phoneNumber,
           Footer: "کد دسترسی",
           template: "registerVerify",
         },
         {
           headers: {
-            ApiKey: process.env.LIMO_API_KEY, 
+            ApiKey: process.env.LIMO_API_KEY,
           },
         }
       )
