@@ -19,7 +19,7 @@ const CategorySchema = new mongoose.Schema(
     },
     icon: {
       sm: { type: String, default: null },
-      lg: { type: String, default: null },
+      lg: { type: Array, default: null },
     },
   },
   {

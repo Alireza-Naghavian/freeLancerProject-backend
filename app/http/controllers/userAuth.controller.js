@@ -121,17 +121,17 @@ class userAuthController extends Controller {
       );
     }
 
-    let welcomeMessage = `کد تایید شد، به فرانت هوکس خوش آمدید`;
-    if (!user.isActive)
-      welcomeMessage = `کد تایید شد، لطفاً اطلاعات خود را تکمیل کنید`;
+    // let welcomeMessage = `کد تایید شد، به فرانت هوکس خوش آمدید`;
+    // if (!user.isActive)
+    //   welcomeMessage = `کد تایید شد، لطفاً اطلاعات خود را تکمیل کنید`;
 
-    return res.status(HttpStatus.OK).json({
-      statusCode: HttpStatus.OK,
-      data: {
-        message: welcomeMessage,
-        user,
-      },
-    });
+    // return res.status(HttpStatus.OK).json({
+    //   statusCode: HttpStatus.OK,
+    //   data: {
+    //     message: welcomeMessage,
+    //     user,
+    //   },
+    // });
   }
 
   async saveUser(phoneNumber) {

@@ -6,7 +6,7 @@ const addProjectSchema = Joi.object({
   title: Joi.string()
     .required()
     .min(3)
-    .max(30)
+    .max(60)
     .error(createError.BadRequest("عنوان محصول صحیح نمیباشد")),
   description: Joi.string()
     .required()
