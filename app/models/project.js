@@ -3,8 +3,8 @@ const ObjectId = mongoose.Schema.Types.ObjectId;
 
 const ProjectSchema = new mongoose.Schema(
   {
-    title: { type: String, required: true },
-    description: { type: String, required: true },
+    title: { type: String, required: true,text: true },
+    description: { type: String, required: true,text: true },
     status: {
       type: String,
       required: true,
