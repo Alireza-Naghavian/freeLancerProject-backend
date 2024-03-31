@@ -9,7 +9,7 @@ const {
 } = require("../../../utils/functions");
 const createError = require("http-errors");
 const { UserModel } = require("../../models/user");
-const Kavenegar = require("kavenegar");
+// const Kavenegar = require("kavenegar");
 const CODE_EXPIRES = 120 * 1000; //90 seconds in miliseconds
 const { StatusCodes: HttpStatus } = require("http-status-codes");
 const {

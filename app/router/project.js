@@ -18,7 +18,7 @@ router.post(
 );
 router.get(
   "/:id",
-  authorize(ROLES.ADMIN, ROLES.OWNER),
+  authorize(ROLES.ADMIN, ROLES.OWNER,ROLES.FREELANCER),
   expressAsyncHandler(ProjectController.getProjectById)
 );
 router.patch(
