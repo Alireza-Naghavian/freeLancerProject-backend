@@ -37,7 +37,7 @@ class ProjectController extends Controller {
   }
   async getListOfProjects(req, res) {
     let dbQuery = {};
-    const { search, category, sort, status } = req.query;
+    const { search, category, sort, status  } = req.query;
 
     // SEARCH
     if (search) dbQuery["$text"] = { $search: search };

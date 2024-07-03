@@ -102,6 +102,7 @@ class userAuthController extends Controller {
         }
       );
       if (response.data.success === true) {
+        // await setAuthCookie(res, user);
         await setAccessToken(res, user);
         await setRefreshToken(res, user);
       }

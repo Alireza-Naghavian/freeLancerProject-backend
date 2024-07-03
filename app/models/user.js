@@ -16,7 +16,7 @@ const UserSchema = new mongoose.Schema(
     resetLink: { type: String, default: null },
     isVerifiedPhoneNumber: { type: Boolean, default: false },
     isActive: { type: Boolean, default: false },
-    status: { type: Number, required: true, default: 1, enum: [0, 1, 2] }, // 0, 1, 2
+    status: { type: Number, required: true, default: 2, enum: [0, 1, 2] }, // 0, 1, 2
     role: { type: String, default: "USER" },
   },
   {
